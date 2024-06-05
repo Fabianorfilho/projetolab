@@ -1,0 +1,127 @@
+{% extends "bases/base.html" %}
+{% load static %}
+{% block 'head' %}
+<link href="{% static 'usuarios/css/cadastro.css' %}" rel="stylesheet">
+<style>
+    body {
+        background-image: url('/static/geral/img/cadastro.png');
+        background-size: cover;
+    }
+    .logout-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #f8f9fa;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .logout-button:hover {
+        background-color: #e9ecef;
+    }
+</style>
+{% endblock 'head' %}
+{% block 'conteudo' %}
+<br>
+<br>
+<div class="container">
+    <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+    <div class="row">
+        <div class="col-md">
+            <h3 class="font-destaque">Solicitar exames</h3>
+            <form action="{% url 'solicitar_exames' %}" method="POST">
+                {% csrf_token %}
+                <label for="exames">Selecione os exames para realizar</label>
+                <select class="select form-control bg-select" multiple name="exames">
+                    {% for exame in tipos_exames %}
+                        <option class="opt" value="{{exame.id}}">{{exame}}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <label for="data">Selecione a data do exame</label>
+                <input type="date" class="form-control" name="data">
+                <br>
+                <label for="hora">Selecione o horário do exame</label>
+                <input type="time" class="form-control" name="hora">
+                <br>
+                <input type="submit" class="btn-default tamanho-2" value="Solicitar exames">
+            </form>
+            <br>
+            <form action="{% url 'enviar_feedback' %}" method="POST">
+                {% csrf_token %}
+                <label for="feedback">Feedback</label>
+                <textarea name="feedback" class="form-control" rows="3"></textarea>
+                <div class="form-group">
+                    <label>
+                        <input type="radio" name="avaliacao" value="1"> 1
+                    </label>
+                    <label>
+                        <input type="radio" name="avaliacao" value="2"> 2
+                    </label>
+                    <label>
+                        <input type="radio" name="avaliacao" value="3"> 3
+                    </label>
+                    <label>
+                        <input type="radio" name="avaliacao" value="4"> 4
+                    </label>
+                    <label>
+                        <input type="radio" name="avaliacao" value="5"> 5
+                    </label>
+                </div>
+                <input type="submit" class="btn-default tamanho-2" value="Enviar Feedback">
+                <button type="button" onclick="location.href='/exames/gerenciar_pedidos'">Gerenciar Pedidos</button>
+            </form>
+        </div>
+        <div class="col-md-2"></div>
+        <div class="col-md card">
+            {% if solicitacao_exames %}
+                {% for exame in solicitacao_exames %}
+                    <div style="font-size: 20px; font-weight: bold">
+                        {% if exame.disponivel %}
+                            <img src="{% static 'exames/img/check.png' %}">
+                        {% else %}
+                            <img src="{% static 'exames/img/exit.png' %}">
+                        {% endif %}
+                        {{exame.nome}}
+                        <span class="previa-preco">
+                            R$ {{exame.preco}}
+                        </span>
+                    </div>
+                {% endfor %}
+                <hr style="color: rgb(17, 14, 182);">
+                <div>
+                    <label>Total: </label><label class="previa-preco">R$ {{preco_total}}</label>
+                </div>
+                <br>
+                <h5 id="dataAtual"></h5>
+                <br>
+                <form action="{% url 'fechar_pedido' %}" method="POST">
+                    {% csrf_token %}
+                    {% for exame in solicitacao_exames %}
+                        <input type="hidden" value="{{exame.id}}" name="exames">
+                    {% endfor %}
+                    <button class="btn-secundario">Fechar pedido</button>
+                </form>
+            {% else %}
+                <h3>Nenhum exame selecionado</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    var meses = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril',
+        'Maio', 'Junho', 'Julho', 'Agosto',
+        'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    var dataAtual = new Date();
+    var dia = dataAtual.getDate();
+    var mes = meses[dataAtual.getMonth()];
+    var formatoData = 'Data: ' + dia + ' de ' + mes;
+    document.getElementById('dataAtual').innerHTML = formatoData;
+</script>
+{% endblock 'conteudo' %}
